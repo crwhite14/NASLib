@@ -140,10 +140,10 @@ class NodeOpGraph(nx.DiGraph, MetaGraph):
             if len(preds) == 0:
                 pass
             else:
-                cell_input = [self.nodes[pred]['output'] for pred in preds]
+                node_input = [self.nodes[pred]['output'] for pred in preds]
                 if 'transform' in node_info:
-                    cell_input = node_info['transform'](cell_input)
-                node_info['output'] = node_info['op'](cell_input)
+                    node_input = node_info['transform'](node_input)
+                node_info['output'] = node_info['op'](node_input)
         return [self.nodes[node]['output'] for node in self.output_nodes()][0]
 
 
