@@ -8,6 +8,7 @@ init_channels: 16
 channel_multiplier: 4
 stem_multiplier: 3
 layers: 9
+num_intermediate_nodes: 5
 model_path: "saved_models"
 
 batch_size: 64

@@ -1,22 +1,22 @@
 from torch import nn
 
 from naslib.optimizers.core.optimizer import NASOptimizer
-from naslib.search_spaces.core import EdgeOpGraph, NodeOpGraph
+from naslib.search_spaces.core import NodeOpGraph
 from naslib.search_spaces.nasbench1shot1 import PRIMITIVES
 from naslib.search_spaces.nasbench1shot1.primitives import Stem, OPS
 from naslib.utils import config_parser
 
 
 class Cell(NodeOpGraph):
-    def __init__(self, primitives, cell_type, C_prev_prev, C_prev, C,
-                 reduction_prev, ops_dict, *args, **kwargs):
+    def __init__(self, primitives, cell_type, C_prev, C, reduction_prev, ops_dict, num_intermediate_nodes, *args,
+                 **kwargs):
         self.primitives = primitives
         self.cell_type = cell_type
-        self.C_prev_prev = C_prev_prev
         self.C_prev = C_prev
         self.C = C
         self.reduction_prev = reduction_prev
         self.ops_dict = ops_dict
+        self.num_intermediate_nodes = num_intermediate_nodes
         self.drop_path_prob = 0
         super(Cell, self).__init__(*args, **kwargs)
 
@@ -26,13 +26,11 @@ class Cell(NodeOpGraph):
         self.add_node(0, type='input', desc='previous')
 
         # 4 intermediate nodes
-        self.add_node(1, type='inter', comb_op='sum')
-        self.add_node(2, type='inter', comb_op='sum')
-        self.add_node(3, type='inter', comb_op='sum')
-        self.add_node(4, type='inter', comb_op='sum')
+        for i in range(self.num_intermediate_nodes):
+            self.add_node(len(self.nodes), type='inter', comb_op='sum')
 
         # Output node
-        self.add_node(6, type='output', comb_op='cat_channels')
+        self.add_node(len(self.nodes), type='output', comb_op='cat_channels')
 
         # Edges: input-inter and inter-inter
         for to_node in self.inter_nodes():
@@ -41,8 +39,7 @@ class Cell(NodeOpGraph):
                 self.add_edge(
                     from_node, to_node, op=None, op_choices=self.primitives,
                     op_kwargs={'C': self.C, 'stride': stride, 'out_node_op': 'sum', 'ops_dict': self.ops_dict,
-                               'affine': False},
-                    to_node=to_node, from_node=from_node)
+                               'affine': False}, to_node=to_node, from_node=from_node)
 
         # Edges: inter-output
         self.add_edge(2, 6, op=Identity())
