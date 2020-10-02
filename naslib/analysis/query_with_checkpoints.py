@@ -46,7 +46,7 @@ optimizer = supported_optimizers[config.optimizer]
 
 optimizer.adapt_search_space(search_space)
 
-checkpoint_dir = '/home/moa/dev/python_projects/NASLib/naslib/benchmarks/nasbench201/run/cifar10/{}/4/search/'.format(config.optimizer)
+checkpoint_dir = 'naslib/benchmarks/nasbench201/run/cifar10/{}/4/search/'.format(config.optimizer)
 checkpointables = optimizer.get_checkpointables()
 
 checkpointer = Checkpointer(
